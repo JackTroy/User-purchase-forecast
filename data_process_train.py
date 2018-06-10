@@ -52,6 +52,7 @@ def data_pro():
     final.drop(['USRID'],axis=1,inplace=True)
     target = final[['FLAG']]
     final.drop(['FLAG'],axis=1,inplace=True)
+    final = pd.get_dummies(final, columns=['V2', 'V4', 'V5'])   #one-hot
     pd.DataFrame.to_csv(final,'pro_final.csv',index=False)
     pd.DataFrame.to_csv(target, 'pro_target.csv', index=False)
     return final, target
