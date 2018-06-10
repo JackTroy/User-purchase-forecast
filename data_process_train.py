@@ -15,6 +15,7 @@ def data_pro():
     train_agg = pd.read_csv('train_agg.csv', sep='\t')
     train_flag = pd.read_csv('train_flg.csv', sep='\t')     # 用户flag 0-不买 1-买
     train_log = pd.read_csv('train_log.csv', sep='\t')
+    logs = train_log
     type_data = train_log.drop_duplicates('USRID', 'first')     # 用户浏览类型
 
     print('train flag shape:{},train agg shape:{}'.format(train_flag.shape, train_agg.shape))
@@ -40,7 +41,6 @@ def data_pro():
     final = pd.merge(train_data, type_data[['USRID','TCH_TYP']], on='USRID',how='left',copy=False)
 
     final['TCH_TYP'].fillna(-1,inplace=True)
-    logs = pd.read_csv('train_log.csv', sep='\t')
     user_count = logs['USRID'].value_counts()
     count_array = pd.DataFrame(user_count)
     count_array['ss'] = count_array.index
