@@ -19,12 +19,15 @@ def data_pro():
     type_data = train_log.drop_duplicates('USRID', 'first')     # 用户浏览类型
 
     print('train flag shape:{},train agg shape:{}'.format(train_flag.shape, train_agg.shape))
-
+    '''
     # 分割点击
     train_log['EVT_LBL_1'] = train_log['EVT_LBL'].apply(lambda x:x.split('-')[0])
     train_log['EVT_LBL_2'] = train_log['EVT_LBL'].apply(lambda x:x.split('-')[1])
     train_log['EVT_LBL_3'] = train_log['EVT_LBL'].apply(lambda x:x.split('-')[2])
-
+    '''
+    EVT_LBL_len = train_log.groupby(by=['USRID'], as_index=False)['EVT_LBL'].agg({'EVT_LBL_len': len})
+    EVT_LBL_set_len = train_log.groupby(by=['USRID'], as_index=False)['EVT_LBL']\
+        .agg({'EVT_LBL_set_len': lambda x: len(set(x))})
     train_log['OCC_TIM'] = train_log['OCC_TIM'].apply(lambda x:time.mktime(time.strptime(x, "%Y-%m-%d %H:%M:%S")))
     train_log = train_log.sort_values(['USRID','OCC_TIM'])
     train_log['next_time'] = train_log.groupby(['USRID'])['OCC_TIM'].diff(-1).apply(np.abs)
@@ -35,7 +38,8 @@ def data_pro():
         'next_time_min':np.min,
         'next_time_max':np.max
     })
-
+    train_log = pd.merge(train_log, EVT_LBL_len, on=['USRID'], how='left')
+    train_log = pd.merge(train_log, EVT_LBL_set_len, on=['USRID'], how='left')
     train_data = pd.merge(train_agg, train_flag, on='USRID',how='left',copy=False)      # 合并
     train_data = pd.merge(train_data,train_log,on=['USRID'],how='left',copy=False)
     final = pd.merge(train_data, type_data[['USRID','TCH_TYP']], on='USRID',how='left',copy=False)
