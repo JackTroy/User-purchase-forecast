@@ -6,10 +6,11 @@ import os
 
 def data_pro_test():
 
-    if os.path.exists('pro_test.csv'):
+    if os.path.exists('pro_test.csv') and os.path.exists('pro_test_id.csv'):
         print('The data is exists .\nif data changed ,please delete the pro_test.csv .')
         test_data = pd.read_csv('pro_test.csv')
-        return test_data
+        usrid = pd.read_csv('pro_test_id.csv')
+        return test_data, usrid
 
     test_agg = pd.read_csv('test_agg.csv', sep='\t')
     test_log = pd.read_csv('test_log.csv', sep='\t')
@@ -48,5 +49,6 @@ def data_pro_test():
     usrid = final[['USRID']]
     final.drop(['USRID'],axis=1,inplace=True)
     final = pd.get_dummies(final, columns=['V2', 'V4', 'V5'])   #one-hot
-    pd.DataFrame.to_csv(final,'pro_test.csv',index=False)
+    pd.DataFrame.to_csv(final, 'pro_test.csv',index=False)
+    pd.DataFrame.to_csv(usrid, 'pro_test_id.csv', index=False)
     return final, usrid
