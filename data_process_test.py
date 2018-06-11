@@ -17,7 +17,7 @@ def data_pro_test():
     logs = test_log
     type_data = test_log.drop_duplicates('USRID', 'first')     # 用户浏览类型
 
-    print('test log shape:{},train agg shape:{}'.format(test_log.shape, test_agg.shape))
+    print('test log shape:{},test agg shape:{}'.format(test_log.shape, test_agg.shape))
 
     EVT_LBL_len = test_log.groupby(by=['USRID'], as_index=False)['EVT_LBL'].agg({'EVT_LBL_len': len})
     EVT_LBL_set_len = test_log.groupby(by=['USRID'], as_index=False)['EVT_LBL']\
