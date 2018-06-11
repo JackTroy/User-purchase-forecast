@@ -1,4 +1,11 @@
 # purchase forcast
+- below folders needed to be created under project root directory
+    ```
+    data
+    feature
+    prediction
+    saved_model
+    ```
 
 - about data path
 

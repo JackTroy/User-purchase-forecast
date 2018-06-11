@@ -49,7 +49,7 @@ def get_next_time_features(agg, log, all_user_id):
         'next_time_max':np.max
     })
     time_features = pd.merge(all_user_id, log_time, on=['USRID'], how='left')
-    time_features.fillna(0)
+    time_features = time_features.fillna(0)
     return time_features, [CONTINUOUS] * 4
 
 def get_type(agg, log, all_user_id):
@@ -67,10 +67,11 @@ def get_click_count(agg, log, all_user_id):
         'user_click_times': user_click_count
     })
     click_count = pd.merge(all_user_id, click_count, on=['USRID'], how='left')
-    click_count.fillna(0)
+    click_count = click_count.fillna(0)
     return click_count, [CONTINUOUS]
 ############################ functions end ############################
 
+############################ Features #################################
 FEATURE_LIST = [
     ('agg_features', get_agg_features),
     ('EVT_LBL_len', get_EVT_LBL_len),
@@ -79,6 +80,7 @@ FEATURE_LIST = [
     ('type_data', get_type),
     ('click_times', get_click_count)
 ]
+########################## Features end ###############################
 
 def get_features(regenerate=True):
     if regenerate:
@@ -89,6 +91,7 @@ def get_features(regenerate=True):
         for feature in FEATURE_LIST:
             print(feature[0])
             feature_val, feature_type = feature[1](agg, log, all_user_id)
+            print(pd.isna(feature_val).sum())
             features = pd.merge(features, feature_val, on=['USRID'], how='left')
             feature_types += feature_type
         features.to_csv('./feature/features.csv')
@@ -96,9 +99,9 @@ def get_features(regenerate=True):
             pickle.dump(feature_types, f)
         flg.to_csv('./feature/flg.csv')
     else:
-        features = pd.read_csv('./feature/features.csv')
+        features = pd.read_csv('./feature/features.csv', index_col=0)
         with open('./feature/feature_types', 'rb') as f:
             feature_types = pickle.load(f)
-        flg = pd.read_csv('./feature/flg.csv')
+        flg = pd.read_csv('./feature/flg.csv', index_col=0)
 
     return features, feature_types, flg
