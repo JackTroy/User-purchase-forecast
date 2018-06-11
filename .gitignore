@@ -4,3 +4,7 @@ reference_model
 __pycache__
 .ipynb_checkpoints
 *.ipynb
+*.csv
+test.py
+testxg.py
+*.model
