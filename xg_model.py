@@ -4,8 +4,9 @@ import xgboost as xgb
 from sklearn.metrics import roc_curve
 from sklearn import metrics
 from sklearn.model_selection import StratifiedKFold
+import time
 
-def xgb_model(train_set_x,train_set_y,test_set_x):
+def xgb_model(train_set_x, train_set_y, test_set_x, save=False):
     # 模型参数
     params = {'booster': 'gbtree',
               'objective':'binary:logistic',
@@ -20,6 +21,8 @@ def xgb_model(train_set_x,train_set_y,test_set_x):
     dvali = xgb.DMatrix(test_set_x)
     model = xgb.train(params, dtrain, num_boost_round=800)
     predict = model.predict(dvali)
+    if save:
+        model.save_model('xgboost_'+time.strftime("%H-%M-%S", time.localtime())+'.model')
     return predict
 
 def xgb_score(data, target, cv=5):
