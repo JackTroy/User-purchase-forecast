@@ -111,4 +111,6 @@ def get_features(regenerate=True):
     train_flg = flg[flg['FLAG'] != -1]
     test_flg = flg[flg['FLAG'] == -1]
 
-    return train_features, test_features, train_flg, test_flg, feature_types
+    train = [train_features, train_flg]
+    test = [test_features, test_flg]
+    return train, test, feature_types
