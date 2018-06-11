@@ -13,7 +13,7 @@
     |-- train_log.csv
     ```
 
-- runing
+- running
 
     ```
     python ./main.py
