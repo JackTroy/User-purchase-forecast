@@ -48,7 +48,7 @@ def data_pro_test():
     final.fillna(0,inplace=True)
     usrid = final[['USRID']]
     final.drop(['USRID'],axis=1,inplace=True)
-    final = pd.get_dummies(final, columns=['V2', 'V4', 'V5'])   #one-hot
+    #final = pd.get_dummies(final, columns=['V2', 'V4', 'V5'])   #one-hot
     pd.DataFrame.to_csv(final, 'pro_test.csv',index=False)
     pd.DataFrame.to_csv(usrid, 'pro_test_id.csv', index=False)
     return final, usrid
