@@ -103,8 +103,8 @@ def get_features(regenerate=True):
             feature_types = pickle.load(f)
         flg = pd.read_csv('./feature/flg.csv', index_col=0)
 
-    features = features.reset_index()
-    flg = flg.reset_index()
+    features = features.reset_index(drop=True)
+    flg = flg.reset_index(drop=True)
     train_features = features[flg['FLAG'] != -1]
     test_features = features[flg['FLAG'] == -1]
     train_flg = flg[flg['FLAG'] != -1]
