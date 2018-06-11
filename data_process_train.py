@@ -19,12 +19,14 @@ def data_pro():
     type_data = train_log.drop_duplicates('USRID', 'first')     # 用户浏览类型
 
     print('train flag shape:{},train agg shape:{}'.format(train_flag.shape, train_agg.shape))
+
     '''
     # 分割点击
     train_log['EVT_LBL_1'] = train_log['EVT_LBL'].apply(lambda x:x.split('-')[0])
     train_log['EVT_LBL_2'] = train_log['EVT_LBL'].apply(lambda x:x.split('-')[1])
     train_log['EVT_LBL_3'] = train_log['EVT_LBL'].apply(lambda x:x.split('-')[2])
     '''
+
     EVT_LBL_len = train_log.groupby(by=['USRID'], as_index=False)['EVT_LBL'].agg({'EVT_LBL_len': len})
     EVT_LBL_set_len = train_log.groupby(by=['USRID'], as_index=False)['EVT_LBL']\
         .agg({'EVT_LBL_set_len': lambda x: len(set(x))})
@@ -56,7 +58,7 @@ def data_pro():
     final.drop(['USRID'],axis=1,inplace=True)
     target = final[['FLAG']]
     final.drop(['FLAG'],axis=1,inplace=True)
-    final = pd.get_dummies(final, columns=['V2', 'V4', 'V5'])   #one-hot
+    #final = pd.get_dummies(final, columns=['V2', 'V4', 'V5'])   #one-hot
     pd.DataFrame.to_csv(final,'pro_final.csv',index=False)
     pd.DataFrame.to_csv(target, 'pro_target.csv', index=False)
     return final, target
