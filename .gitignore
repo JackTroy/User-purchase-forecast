@@ -1,0 +1,6 @@
+data/*
+feature/*
+reference_model
+__pycache__
+.ipynb_checkpoints
+*.ipynb
