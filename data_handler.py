@@ -13,6 +13,7 @@ def get_data(path='./data'):
     train_flg = pd.read_csv(os.path.join(path, 'train_flg.csv'), sep='\t')
     test_flg = pd.read_csv(os.path.join(path, 'submit_sample.csv'), sep='\t')
     test_flg['FLAG'] = -1
+    test_flg = test_flg.drop(columns=['RST'])
     flg = pd.concat([train_flg,test_flg], copy=False)
 
     return agg, log, flg

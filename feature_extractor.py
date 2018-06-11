@@ -1,6 +1,8 @@
+import time
+import pickle
 import numpy as np
 import pandas as pd
-import time
+from data_handler import get_data
 
 ################## functions to obtain each features ##################
 # notice 1:                                                           #
@@ -78,13 +80,25 @@ FEATURE_LIST = [
     ('click_times', get_click_count)
 ]
 
-def get_feature(agg, log, flg):
-    features = flg.loc[:, 'USRID':'USRID']
-    all_user_id = flg.loc[:, 'USRID':'USRID']
-    feature_types = list()
-    for feature in FEATURE_LIST:
-        print(feature[0])
-        feature_val, feature_type = feature[1](agg, log, all_user_id)
-        features = pd.merge(features, feature_val, on=['USRID'], how='left')
-        feature_types += feature_type
-    return features, feature_type
+def get_features(regenerate=True):
+    if regenerate:
+        agg, log, flg = get_data()
+        features = flg.loc[:, 'USRID':'USRID']
+        all_user_id = flg.loc[:, 'USRID':'USRID']
+        feature_types = list()
+        for feature in FEATURE_LIST:
+            print(feature[0])
+            feature_val, feature_type = feature[1](agg, log, all_user_id)
+            features = pd.merge(features, feature_val, on=['USRID'], how='left')
+            feature_types += feature_type
+        features.to_csv('./feature/features.csv')
+        with open('./feature/feature_types', 'wb') as f:
+            pickle.dump(feature_types, f)
+        flg.to_csv('./feature/flg.csv')
+    else:
+        features = pd.read_csv('./feature/features.csv')
+        with open('./feature/feature_types', 'rb') as f:
+            feature_types = pickle.load(f)
+        flg = pd.read_csv('./feature/flg.csv')
+
+    return features, feature_types, flg
