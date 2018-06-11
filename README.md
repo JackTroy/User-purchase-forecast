@@ -12,3 +12,9 @@
     |-- train_flg.csv
     |-- train_log.csv
     ```
+
+- runing
+
+    ```
+    python ./main.py
+    ```
