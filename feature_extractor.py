@@ -91,7 +91,6 @@ def get_features(regenerate=True):
         for feature in FEATURE_LIST:
             print(feature[0])
             feature_val, feature_type = feature[1](agg, log, all_user_id)
-            print(pd.isna(feature_val).sum())
             features = pd.merge(features, feature_val, on=['USRID'], how='left')
             feature_types += feature_type
         features.to_csv('./feature/features.csv')

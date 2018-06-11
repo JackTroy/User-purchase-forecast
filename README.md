@@ -1,5 +1,5 @@
 # purchase forcast
-- below folders needed to be created under project root directory
+- following folders needed to be created under project root directory
     ```
     data
     feature
@@ -9,7 +9,7 @@
 
 - about data path
 
-    all file should be placed at `data/` directly, see below
+    all files should be placed at `data/` directly, as followed
     ```
     /data
     |-- submit_sample.csv
