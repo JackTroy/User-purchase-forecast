@@ -52,6 +52,6 @@ def get_result(uid, result):
     re = pd.concat([uid, pd.DataFrame(result)], axis=1)
     re.rename(columns={0:'RST'},inplace=True)
     re.to_csv('test_result.csv', index=False, sep='\t')
-
+    return re
 
 
