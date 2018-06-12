@@ -28,6 +28,8 @@ def xgb_model(train_set_x, train_set_y, test_set_x, save=False):
     return predict
 
 def xgb_score(data, target, cv=5):
+    target = target.values
+    target = target.ravel()
     auc_list = []
     skf = StratifiedKFold(n_splits=cv, shuffle=True, random_state=3)
     for train_index, test_index in skf.split(data, target):
