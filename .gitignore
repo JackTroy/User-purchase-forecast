@@ -1,5 +1,7 @@
 data/*
 feature/*
+prediction/*
+.idea/*
 reference_model
 __pycache__
 .ipynb_checkpoints
@@ -8,4 +10,3 @@ __pycache__
 test.py
 testxg.py
 *.model
-.idea/*

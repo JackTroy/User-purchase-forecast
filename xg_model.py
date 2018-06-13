@@ -8,6 +8,10 @@ import time
 import os
 
 def xgb_model(train_set_x, train_set_y, test_set_x, save=False):
+    if 'USRID' in train_set_x.columns:
+        train_set_x = train_set_x.drop(['USRID'], axis=1)
+    if 'USRID' in test_set_x.columns:
+        test_set_x = test_set_x.drop(['USRID'], axis=1)
     # 模型参数
     params = {'booster': 'gbtree',
               'objective':'binary:logistic',
@@ -27,7 +31,11 @@ def xgb_model(train_set_x, train_set_y, test_set_x, save=False):
             'xgboost_'+time.strftime("%H-%M-%S", time.localtime())+'.model'))
     return predict
 
-def xgb_score(data, target, cv=5):
+def xgb_score(train, cv=5):
+    data = train[0]
+    target = train[1]
+    if 'USRID' in target.columns:
+        target.drop(['USRID'], axis=1, inplace=True)
     target = target.values
     target = target.ravel()
     auc_list = []
@@ -55,10 +63,14 @@ def xgb_score(data, target, cv=5):
 
     print('validate result:', np.mean(auc_list))
 
-def get_result(uid, result):
+def save_result(train_data, test_data, result_name='test_result'):
+    uid = test_data[0]['USRID'].reset_index()
+    uid.drop(['index'], axis=1, inplace=True)
+    if 'USRID' in train_data[1].columns:
+        train_data[1].drop(['USRID'], axis=1, inplace=True)
+    result = xgb_model(train_data[0], train_data[1], test_data[0])
     re = pd.concat([uid, pd.DataFrame(result)], axis=1)
-    re.rename(columns={0:'RST'},inplace=True)
-    re.to_csv('./prediction/test_result.csv', index=False, sep='\t')
+    re.rename(columns={0:'RST'}, inplace=True)
+    re.to_csv(os.path.join('./prediction', result_name + '.csv'), index=False, sep='\t')
+    print('save succeed')
     return re
-
-
