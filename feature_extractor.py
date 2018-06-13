@@ -3,6 +3,7 @@ import pickle
 import numpy as np
 import pandas as pd
 from data_handler import get_data
+from gensim.models import Word2Vec
 
 ################## functions to obtain each features ##################
 # notice 1:                                                           #
@@ -28,7 +29,7 @@ def get_EVT_LBL_len(agg, log, all_user_id):
     EVT_LBL_len = log[['USRID', 'EVT_LBL']].groupby(by=['USRID'], as_index=False)['EVT_LBL']\
         .agg({'EVT_LBL_len': len})
     EVT_LBL_len = pd.merge(all_user_id, EVT_LBL_len, on=['USRID'], how='left')
-    EVT_LBL_len = EVT_LBL_len.fillna(0)
+    EVT_LBL_len = EVT_LBL_len.fillna(0) 
     return EVT_LBL_len, [CONTINUOUS]
 
 def get_EVT_LBL_set_len(agg, log, all_user_id):
@@ -69,16 +70,35 @@ def get_click_count(agg, log, all_user_id):
     click_count = pd.merge(all_user_id, click_count, on=['USRID'], how='left')
     click_count = click_count.fillna(0)
     return click_count, [CONTINUOUS]
+
+def get_average_EVENT_sequence_vector(agg, log, all_user_id):
+    # no fucking time decay yet
+    df_event_sequence = log['EVT_LBL'].apply(lambda x:x.split('-'))
+    list_event_sequence = df_event_sequence.values.tolist()
+    w2v_model = Word2Vec(list_event_sequence, size=5, window=1, min_count=1, negative=3,
+                 sg=1, sample=0.001, hs=1, workers=4)
+    df_event_seq_vec_sum = df_event_sequence.apply(
+        lambda seq: np.sum([w2v_model.wv[mod] for mod in seq], axis=0))
+    df_event_seq_vec_sum = pd.DataFrame(np.array(df_event_seq_vec_sum.values.tolist()))
+    df_event_seq_vec_sum.columns = ['avg_vec_{}'.format(i) for i in range(5)]
+    df_event_seq_vec_sum['USRID'] = log['USRID'].values
+    df_usrid_average_seq_vec = df_event_seq_vec_sum.groupby(by=['USRID']).aggregate(np.mean).reset_index()
+    df_usrid_average_seq_vec = pd.merge(all_user_id, df_usrid_average_seq_vec, on=['USRID'], how='left')
+    df_usrid_average_seq_vec = df_usrid_average_seq_vec.fillna(0)
+    return df_usrid_average_seq_vec, [CONTINUOUS] * 5
+
 ############################ functions end ############################
 
 ############################ Features #################################
 FEATURE_LIST = [
     ('agg_features', get_agg_features),
-    ('EVT_LBL_len', get_EVT_LBL_len),
+    # ('EVT_LBL_len', get_EVT_LBL_len), duplicate feature 
     ('EVT_LBL_set_len', get_EVT_LBL_set_len),
     ('next_time_features', get_next_time_features),
     ('type_data', get_type),
-    ('click_times', get_click_count)
+    ('click_times', get_click_count),
+    # 06/13/18:34 added by jack_troy
+    ('average_EVENT_sequence_vector', get_average_EVENT_sequence_vector)
 ]
 ########################## Features end ###############################
 
