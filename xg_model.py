@@ -16,7 +16,7 @@ def xgb_model(train_set_x, train_set_y, test_set_x, save=False):
     params = {'booster': 'gbtree',
               'objective':'binary:logistic',
               'eta': 0.02,
-              'max_depth': 3,  # 4 3
+              'max_depth': 4,  # 4 3
               'colsample_bytree': 0.7,#0.8
               'subsample': 0.7,
               'min_child_weight': 9,  # 2 3
@@ -35,7 +35,7 @@ def xgb_score(train, cv=5):
     data = train[0]
     target = train[1]
     if 'USRID' in target.columns:
-        target.drop(['USRID'], axis=1, inplace=True)
+        target = target.drop(['USRID'], axis=1)
     target = target.values
     target = target.ravel()
     auc_list = []
