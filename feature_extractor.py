@@ -87,6 +87,36 @@ def get_average_EVENT_sequence_vector(agg, log, all_user_id):
     df_usrid_average_seq_vec = df_usrid_average_seq_vec.fillna(0)
     return df_usrid_average_seq_vec, [CONTINUOUS] * 5
 
+def get_dummy(total_events):
+    '''one_hot_encoding batches'''
+    pd.get_dummies(total_events.iloc[:1000000,:],columns=['0','1','2']).groupby('USRID').apply(np.sum).to_csv('./data/fisrt_million.csv')
+    pd.get_dummies(total_events.iloc[1000001:2000000,:],columns=['0','1','2']).groupby('USRID').apply(np.sum).to_csv('./data/second_million.csv')
+    pd.get_dummies(total_events.iloc[2000001:3000000,:],columns=['0','1','2']).groupby('USRID').apply(np.sum).to_csv('./data/third_million.csv')
+    pd.get_dummies(total_events.iloc[3000001:,:],columns=['0','1','2']).groupby('USRID').apply(np.sum).to_csv('./data/final_million.csv')
+
+def get_events_click_count(agg, log, all_user_id, regenerate=False):
+    if regenerate:
+        events = log[['USRID','EVT_LBL']]
+        #split the click-events to 3 columns
+        events_spl = pd.DataFrame(events['EVT_LBL'].str.split('-').values.tolist())
+        all_user_id = all_user_id.reset_index()
+        total_events = pd.concat([all_user_id.iloc[:,1:],events_spl],axis=1)
+
+        get_dummy(total_events)
+        
+        first = pd.read_csv('./data/fisrt_million.csv')
+        second = pd.read_csv('./data/second_million.csv')
+        third = pd.read_csv('./data/third_million.csv')
+        final = pd.read_csv('./data/final_million.csv')
+        # integrate the four data 
+        agg = pd.concat([pd.concat([pd.concat([first,second],axis=0),third],axis=0),final],axis=0)
+        agg.drop('USRID.1',axis=1,inplace=True)
+        # groupby again avoid missing feature in the convergence
+        agg.groupby('USRID').apply(np.sum).drop('USRID.1',axis=1).to_csv('./data/final_events.csv')
+        return pd.read_csv('./data/final_events.csv') 
+    else:
+        return pd.read_csv('./data/final_events.csv') 
+    
 ############################ functions end ############################
 
 ############################ Features #################################
@@ -98,7 +128,8 @@ FEATURE_LIST = [
     ('type_data', get_type),
     ('click_times', get_click_count),
     # 06/13/18:34 added by jack_troy
-    ('average_EVENT_sequence_vector', get_average_EVENT_sequence_vector)
+    ('average_EVENT_sequence_vector', get_average_EVENT_sequence_vector),
+    ('events_click_count', get_events_click_count)
 ]
 ########################## Features end ###############################
 
