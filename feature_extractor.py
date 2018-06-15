@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 from data_handler import get_data
 from gensim.models import Word2Vec
+from sklearn.decomposition import PCA
 
 ################## functions to obtain each features ##################
 # notice 1:                                                           #
@@ -89,10 +90,14 @@ def get_average_EVENT_sequence_vector(agg, log, all_user_id):
 
 def get_dummy(total_events):
     '''one_hot_encoding batches'''
-    pd.get_dummies(total_events.iloc[:1000000,:],columns=['0','1','2']).groupby('USRID').apply(np.sum).to_csv('./data/fisrt_million.csv')
-    pd.get_dummies(total_events.iloc[1000001:2000000,:],columns=['0','1','2']).groupby('USRID').apply(np.sum).to_csv('./data/second_million.csv')
-    pd.get_dummies(total_events.iloc[2000001:3000000,:],columns=['0','1','2']).groupby('USRID').apply(np.sum).to_csv('./data/third_million.csv')
-    pd.get_dummies(total_events.iloc[3000001:,:],columns=['0','1','2']).groupby('USRID').apply(np.sum).to_csv('./data/final_million.csv')
+    pd.get_dummies(total_events.iloc[:1000000,:],columns=['0','1','2']).groupby(
+        'USRID').apply(np.sum).to_csv('./data/fisrt_million.csv')
+    pd.get_dummies(total_events.iloc[1000001:2000000,:],columns=['0','1','2']).groupby(
+        'USRID').apply(np.sum).to_csv('./data/second_million.csv')
+    pd.get_dummies(total_events.iloc[2000001:3000000,:],columns=['0','1','2']).groupby(
+        'USRID').apply(np.sum).to_csv('./data/third_million.csv')
+    pd.get_dummies(total_events.iloc[3000001:,:],columns=['0','1','2']).groupby(
+        'USRID').apply(np.sum).to_csv('./data/final_million.csv')
 
 def get_events_click_count(agg, log, all_user_id, regenerate=False):
     if regenerate:
@@ -103,7 +108,6 @@ def get_events_click_count(agg, log, all_user_id, regenerate=False):
         total_events = pd.concat([all_user_id.iloc[:,1:],events_spl],axis=1)
 
         get_dummy(total_events)
-        
         first = pd.read_csv('./data/fisrt_million.csv')
         second = pd.read_csv('./data/second_million.csv')
         third = pd.read_csv('./data/third_million.csv')
@@ -112,24 +116,48 @@ def get_events_click_count(agg, log, all_user_id, regenerate=False):
         agg = pd.concat([pd.concat([pd.concat([first,second],axis=0),third],axis=0),final],axis=0)
         agg.drop('USRID.1',axis=1,inplace=True)
         # groupby again avoid missing feature in the convergence
-        agg.groupby('USRID').apply(np.sum).drop('USRID.1',axis=1).to_csv('./data/final_events.csv')
-        return pd.read_csv('./data/final_events.csv') 
+        event_count_data = agg.groupby('USRID').apply(np.sum)
+        if 'USRID.1' in event_count_data.columns:
+            event_count_data.drop('USRID.1', axis=1, inplace=True)
+        event_count_data.fillna(-1)
+        event_count_data.to_csv('./data/final_events.csv')
+        return event_count_data
     else:
-        return pd.read_csv('./data/final_events.csv') 
+        event_count_data = pd.read_csv('./data/final_events.csv')
+        if 'USRID.1' in event_count_data.columns:
+            event_count_data.drop('USRID.1', axis=1, inplace=True)
+        return event_count_data
+
+def get_events_click_count_pca(agg, log, all_user_id, regenerate=False):
+    total_data = get_events_click_count(agg, log, all_user_id, regenerate)
+    if 'USRID.1' in total_data.columns:
+        total_data.drop('USRID.1', axis=1, inplace=True)
+    total_data = pd.merge(all_user_id, total_data, on='USRID', how='left')
+    total_data.fillna(-1, inplace=True)
+    total_data = total_data.drop('USRID', axis=1)
     
+    pcas = PCA(n_components=60, random_state=0)
+    event_data_pca = pcas.fit_transform(total_data)
+    print("pca explained variance ratio sum:")
+    print(sum(pcas.explained_variance_ratio_))
+    event_data_pca = pd.DataFrame(event_data_pca)
+    all_user_id = all_user_id.reset_index(drop=True)
+    event_data_pca = pd.concat([all_user_id, event_data_pca], axis=1)
+    return event_data_pca, [CONTINUOUS]
+
 ############################ functions end ############################
 
 ############################ Features #################################
 FEATURE_LIST = [
     ('agg_features', get_agg_features),
-    # ('EVT_LBL_len', get_EVT_LBL_len), duplicate feature 
+    #('EVT_LBL_len', get_EVT_LBL_len), duplicate feature,
     ('EVT_LBL_set_len', get_EVT_LBL_set_len),
     ('next_time_features', get_next_time_features),
     ('type_data', get_type),
     ('click_times', get_click_count),
     # 06/13/18:34 added by jack_troy
     ('average_EVENT_sequence_vector', get_average_EVENT_sequence_vector),
-    ('events_click_count', get_events_click_count)
+    ('events_click_count_pca', get_events_click_count_pca)
 ]
 ########################## Features end ###############################
 
@@ -164,3 +192,4 @@ def get_features(regenerate=True):
     train = [train_features, train_flg]
     test = [test_features, test_flg]
     return train, test, feature_types
+    
