@@ -1,3 +1,4 @@
+import os
 import time
 import pickle
 import numpy as np
@@ -99,8 +100,9 @@ def get_dummy(total_events):
     pd.get_dummies(total_events.iloc[3000001:,:],columns=['0','1','2']).groupby(
         'USRID').apply(np.sum).to_csv('./data/final_million.csv')
 
-def get_events_click_count(agg, log, all_user_id, regenerate=False):
-    if regenerate:
+def get_events_click_count(agg, log, all_user_id):
+    regenerate = os.path.exists('./data/final_events.csv')
+    if regenerate == False:
         events = log[['USRID','EVT_LBL']]
         #split the click-events to 3 columns
         events_spl = pd.DataFrame(events['EVT_LBL'].str.split('-').values.tolist())
@@ -128,8 +130,8 @@ def get_events_click_count(agg, log, all_user_id, regenerate=False):
             event_count_data.drop('USRID.1', axis=1, inplace=True)
         return event_count_data
 
-def get_events_click_count_pca(agg, log, all_user_id, regenerate=False):
-    total_data = get_events_click_count(agg, log, all_user_id, regenerate)
+def get_events_click_count_pca(agg, log, all_user_id):
+    total_data = get_events_click_count(agg, log, all_user_id)
     if 'USRID.1' in total_data.columns:
         total_data.drop('USRID.1', axis=1, inplace=True)
     total_data = pd.merge(all_user_id, total_data, on='USRID', how='left')
